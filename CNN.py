@@ -25,27 +25,30 @@ Y_train = np_utils.to_categorical(y_train, 10)
 Y_test = np_utils.to_categorical(y_test, 10)
 
 
-def resLayer(in_m):
-    batch = layers.normalization.BatchNormalization()(in_m)
-    atv = layers.Activation(activation="swish")(batch)
-    cnv = layers.Conv2D(32, (3, 3), activation="linear", padding="same", use_bias=False)(atv)
+def resLayer(in_m, size):
+    cnv = layers.Conv2D(size, (3, 3), activation="linear", padding="same")(in_m)
     batch = layers.normalization.BatchNormalization()(cnv)
     atv = layers.Activation(activation="swish")(batch)
-    cnv = layers.Conv2D(32, (3, 3), activation="linear", padding="same", use_bias=False)(atv)
+    cnv = layers.Conv2D(size, (3, 3), activation="linear", padding="same")(atv)
     batch = layers.normalization.BatchNormalization()(cnv)
     atv = layers.Activation(activation="swish")(batch)
-    cnv = layers.Conv2D(32, (5, 5), activation="linear", padding="same", use_bias=False)(atv)
-    add = layers.add([cnv, in_m])
+    cnv = layers.Conv2D(size, (5, 5), activation="linear", padding="same")(atv)
+    batch = layers.normalization.BatchNormalization()(cnv)
+    atv = layers.Activation(activation="swish")(batch)
+    add = layers.add([atv, in_m])
     return add
 
 #Model Creation
 inp = Input(shape=[28,28,1])
-cnv = Conv2D(32, (3, 3), strides=1, padding='valid', name='conv1')(inp)
-atv = layers.Activation("swish", name='swish1')(cnv)
-res = atv
 
-for i in range(10):
-    res = resLayer(res)
+res = resLayer(inp, 32)
+for i in range(1):
+    res = resLayer(res, 32)
+drop = layers.Dropout(0.3)(res)
+
+res = resLayer(drop, 32)
+for i in range(1):
+    res = resLayer(res, 32)
 drop = layers.Dropout(0.3)(res)
 
 flat = layers.Flatten()(drop)
@@ -59,7 +62,7 @@ model = models.Model(inp, out)
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
 
 #Training and Validation
-model.fit(X_train, Y_train, batch_size=128, epochs=30, validation_data=(X_test, Y_test), callbacks=[tensorboard_callback])
+model.fit(X_train, Y_train, batch_size=128, epochs=50, validation_data=(X_test, Y_test), callbacks=[tensorboard_callback])
 
 #Evaluate model
 print('Evaluation: I have large fatass nuts')
