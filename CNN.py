@@ -27,21 +27,21 @@ Y_test = np_utils.to_categorical(y_test, 10)
 #Model Creation
 inp = Input(shape=[28,28,1])
 cnv = Conv2D(32, (3, 3), strides=1, padding='valid', name='conv1')(inp)
-atv = layers.Activation("gelu", name='swish1')(cnv)
+atv = layers.Activation("swish", name='swish1')(cnv)
 batch = layers.BatchNormalization()(atv)
 cnv = Conv2D(32, (3, 3), strides=1, padding='valid', name='conv2')(batch)
-atv = layers.Activation("gelu", name='swish2')(cnv)
+atv = layers.Activation("swish", name='swish2')(cnv)
 batch = layers.BatchNormalization()(atv)
 cnv = Conv2D(32, (5, 5), strides=1, padding='same', name='conv3')(batch)
-atv = layers.Activation("gelu", name='swish3')(cnv)
+atv = layers.Activation("swish", name='swish3')(cnv)
 batch = layers.BatchNormalization()(atv)
 drop = layers.Dropout(0.3)(batch)
 
 cnv = Conv2D(64, (3, 3), strides=1, padding='valid', name='conv4')(drop)
-atv = layers.Activation("gelu", name='swish4')(cnv)
+atv = layers.Activation("swish", name='swish4')(cnv)
 batch = layers.BatchNormalization()(atv)
 cnv = Conv2D(64, (5, 5), strides=2, padding='same', name='conv5')(batch)
-atv = layers.Activation("gelu", name='swish5')(cnv)
+atv = layers.Activation("swish", name='swish5')(cnv)
 batch = layers.BatchNormalization()(atv)
 drop = layers.Dropout(0.3)(batch)
 
@@ -56,10 +56,10 @@ model = models.Model(inp, out)
 model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
 
 #Training and Validation
-model.fit(X_train, Y_train, batch_size=128, epochs=10, validation_data=(X_test, Y_test), callbacks=[tensorboard_callback])
+model.fit(X_train, Y_train, batch_size=128, epochs=30, validation_data=(X_test, Y_test), callbacks=[tensorboard_callback])
 
 #Evaluate model
-print('Evaluation')
+print('Evaluation: I have large fatass nuts')
 model.evaluate(X_test, Y_test)
 
 #Save Model
