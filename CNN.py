@@ -24,26 +24,29 @@ X_test /= 255
 Y_train = np_utils.to_categorical(y_train, 10)
 Y_test = np_utils.to_categorical(y_test, 10)
 
+
+def resLayer(in_m):
+    batch = layers.normalization.BatchNormalization()(in_m)
+    atv = layers.Activation(activation="swish")(batch)
+    cnv = layers.Conv2D(32, (3, 3), activation="linear", padding="same", use_bias=False)(atv)
+    batch = layers.normalization.BatchNormalization()(cnv)
+    atv = layers.Activation(activation="swish")(batch)
+    cnv = layers.Conv2D(32, (3, 3), activation="linear", padding="same", use_bias=False)(atv)
+    batch = layers.normalization.BatchNormalization()(cnv)
+    atv = layers.Activation(activation="swish")(batch)
+    cnv = layers.Conv2D(32, (5, 5), activation="linear", padding="same", use_bias=False)(atv)
+    add = layers.add([cnv, in_m])
+    return add
+
 #Model Creation
 inp = Input(shape=[28,28,1])
 cnv = Conv2D(32, (3, 3), strides=1, padding='valid', name='conv1')(inp)
 atv = layers.Activation("swish", name='swish1')(cnv)
-batch = layers.BatchNormalization()(atv)
-cnv = Conv2D(32, (3, 3), strides=1, padding='valid', name='conv2')(batch)
-atv = layers.Activation("swish", name='swish2')(cnv)
-batch = layers.BatchNormalization()(atv)
-cnv = Conv2D(32, (5, 5), strides=1, padding='same', name='conv3')(batch)
-atv = layers.Activation("swish", name='swish3')(cnv)
-batch = layers.BatchNormalization()(atv)
-drop = layers.Dropout(0.3)(batch)
+res = atv
 
-cnv = Conv2D(64, (3, 3), strides=1, padding='valid', name='conv4')(drop)
-atv = layers.Activation("swish", name='swish4')(cnv)
-batch = layers.BatchNormalization()(atv)
-cnv = Conv2D(64, (5, 5), strides=2, padding='same', name='conv5')(batch)
-atv = layers.Activation("swish", name='swish5')(cnv)
-batch = layers.BatchNormalization()(atv)
-drop = layers.Dropout(0.3)(batch)
+for i in range(10):
+    res = resLayer(res)
+drop = layers.Dropout(0.3)(res)
 
 flat = layers.Flatten()(drop)
 d = layers.Dense(128, activation='swish')(flat)
