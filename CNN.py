@@ -25,28 +25,34 @@ Y_train = np_utils.to_categorical(y_train, 10)
 Y_test = np_utils.to_categorical(y_test, 10)
 
 
-def resLayer(in_m, size):
-    cnv = layers.Conv2D(size, (3, 3), activation="linear", padding="same")(in_m)
+def resLayer(inp, size):
+    cnv = layers.Conv2D(size, (3, 3), activation="linear", padding="same")(inp)
     batch = layers.normalization.BatchNormalization()(cnv)
     atv = layers.Activation(activation="swish")(batch)
-    cnv = layers.Conv2D(size, (3, 3), activation="linear", padding="same")(atv)
-    batch = layers.normalization.BatchNormalization()(cnv)
-    atv = layers.Activation(activation="swish")(batch)
-    cnv = layers.Conv2D(size, (5, 5), activation="linear", padding="same")(atv)
-    batch = layers.normalization.BatchNormalization()(cnv)
-    atv = layers.Activation(activation="swish")(batch)
-    drop = layers.Dropout(0.3)(atv)
-    add = layers.add([drop, in_m])
+    add = layers.add([atv, inp])
     return add
 
 #Model Creation
 inp = Input(shape=[28,28,1])
 
-res = resLayer(inp, 32)
-for i in range(10):
-    res = resLayer(res, 32)
+res = resLayer(inp, 64)
+for i in range(2):
+    res = resLayer(res, 64)
 
-flat = layers.Flatten()(res)
+cnv = layers.Conv2D(112, (3, 3), activation="linear", padding="same")(res)
+batch = layers.normalization.BatchNormalization()(cnv)
+res = layers.Activation(activation="swish")(batch)
+for i in range(5):
+    res = resLayer(res, 112)
+
+cnv = layers.Conv2D(160, (3, 3), activation="linear", padding="same")(res)
+batch = layers.normalization.BatchNormalization()(cnv)
+res = layers.Activation(activation="swish")(batch)
+for i in range(8):
+    res = resLayer(res, 160)
+
+drop = layers.Dropout(0.2)(res)
+flat = layers.Flatten()(drop)
 d = layers.Dense(128, activation='swish')(flat)
 batch = layers.BatchNormalization()(d)
 drop = layers.Dropout(0.3)(batch)
