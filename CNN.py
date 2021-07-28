@@ -35,23 +35,18 @@ def resLayer(in_m, size):
     cnv = layers.Conv2D(size, (5, 5), activation="linear", padding="same")(atv)
     batch = layers.normalization.BatchNormalization()(cnv)
     atv = layers.Activation(activation="swish")(batch)
-    add = layers.add([atv, in_m])
+    drop = layers.Dropout(0.3)(atv)
+    add = layers.add([drop, in_m])
     return add
 
 #Model Creation
 inp = Input(shape=[28,28,1])
 
 res = resLayer(inp, 32)
-for i in range(1):
+for i in range(10):
     res = resLayer(res, 32)
-drop = layers.Dropout(0.3)(res)
 
-res = resLayer(drop, 32)
-for i in range(1):
-    res = resLayer(res, 32)
-drop = layers.Dropout(0.3)(res)
-
-flat = layers.Flatten()(drop)
+flat = layers.Flatten()(res)
 d = layers.Dense(128, activation='swish')(flat)
 batch = layers.BatchNormalization()(d)
 drop = layers.Dropout(0.3)(batch)
